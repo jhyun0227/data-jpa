@@ -55,6 +55,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
      * 1. 벌크성 업데이트는 영속성 컨텍스트를 무시하고 DB에 바로 쿼리를 꽃아 넣는다.
      * 2. 그렇기 때문에 같은 트랜잭션 안에서 영속성 컨텍스트에서 관리되는 값과 DB의 값이 다를 수 있다.
      * 3. 그래서 벌크 연산시 영속성 컨텍스트를 다 날려야 한다.
+     *
+     * 권장방안
+     * 1. 영속성 컨텍스트에 엔티티가 없는 상태에서 벌크 연산을 먼저 실행한다.
+     * 2. 부득이하게 영속성 컨텍스트에 엔티티가 있으면 벌크 연산 직후 영속성 컨텍스트를 초기화 한다.
      */
     @Modifying(clearAutomatically = true) //JPA executeUpaate의 역할을 함으로 꼭 넣어야 한다.
     @Query("update Member m set m.age = m.age + 1 where m.age >= :age")

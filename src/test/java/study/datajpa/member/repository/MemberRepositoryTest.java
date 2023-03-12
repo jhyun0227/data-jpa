@@ -235,6 +235,10 @@ class MemberRepositoryTest {
          * 벌크성 업데이트는 영속성 컨텍스트를 무시하고 DB에 바로 쿼리를 꽃아 넣는다.
          * 벌크 연산으로 DB의 데이터는 변경되었지만 현재 영속성 컨텍스트에서 member5의 나이는 40으로 관리되어진다.
          * 그렇기 때문에 벌크성 쿼리 후에는 영속성 컨텍스트를 한번 날려야 한다.
+         *
+         * 권장방안
+         * 1. 영속성 컨텍스트에 엔티티가 없는 상태에서 벌크 연산을 먼저 실행한다.
+         * 2. 부득이하게 영속성 컨텍스트에 엔티티가 있으면 벌크 연산 직후 영속성 컨텍스트를 초기화 한다.
          */
         int resultCount = memberRepository.bulkAgePlus(20);
         List<Member> resultBefore = memberRepository.findByUsername("member5");
