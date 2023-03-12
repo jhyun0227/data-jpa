@@ -78,4 +78,21 @@ public class MemberJpaRepository {
                 .getSingleResult();
 
     }
+
+    /**
+     * 벌크 수정 쿼리
+     * ##### 주의 #####
+     * 1. 벌크성 업데이트는 영속성 컨텍스트를 무시하고 DB에 바로 쿼리를 꽃아 넣는다.
+     * 2. 그렇기 때문에 같은 트랜잭션 안에서 영속성 컨텍스트에서 관리되는 값과 DB의 값이 다를 수 있다.
+     * 3. 그래서 벌크 연산시 영속성 컨텍스트를 다 날려야 한다.
+     */
+    public int bulkAgePlus(int age) {
+        String jpql = "update Member m set m.age = m.age +1 where m.age >= :age";
+
+        int resultCount = em.createQuery(jpql)
+                .setParameter("age", age)
+                .executeUpdate();
+
+        return resultCount;
+    }
 }

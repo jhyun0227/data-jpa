@@ -14,6 +14,7 @@ import study.datajpa.member.entity.Member;
 import study.datajpa.team.entity.Team;
 import study.datajpa.team.repository.TeamRepository;
 
+import javax.persistence.EntityManager;
 import java.sql.Array;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +31,8 @@ class MemberRepositoryTest {
     MemberRepository memberRepository;
     @Autowired
     TeamRepository teamRepository;
+    @Autowired
+    EntityManager em;
 
     @Test
     public void testMember() {
@@ -216,5 +219,66 @@ class MemberRepositoryTest {
         assertThat(slice.getNumber()).isEqualTo(0);
         assertThat(slice.isFirst()).isTrue();
         assertThat(slice.hasNext()).isTrue();
+    }
+
+    @Test
+    public void bulkUpdate() {
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        //when
+        /**
+         * 벌크성 업데이트는 영속성 컨텍스트를 무시하고 DB에 바로 쿼리를 꽃아 넣는다.
+         * 벌크 연산으로 DB의 데이터는 변경되었지만 현재 영속성 컨텍스트에서 member5의 나이는 40으로 관리되어진다.
+         * 그렇기 때문에 벌크성 쿼리 후에는 영속성 컨텍스트를 한번 날려야 한다.
+         */
+        int resultCount = memberRepository.bulkAgePlus(20);
+        List<Member> resultBefore = memberRepository.findByUsername("member5");
+        Member member5Before = resultBefore.get(0);
+        System.out.println("member5Before.getAge() = " + member5Before.getAge());
+
+//        em.flush();
+//        em.clear();
+
+        List<Member> resultAfter = memberRepository.findByUsername("member5");
+        Member member5After = resultAfter.get(0);
+        System.out.println("member5After.getAge() = " + member5After.getAge());
+
+        //then
+        assertThat(resultCount).isEqualTo(3);
+    }
+
+    @Test
+    public void findMemberLazy() {
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member member1 = new Member("member1", 10, teamA);
+        Member member2 = new Member("member2", 10, teamB);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        //영속성 컨텍스트 DB 반영 후 초기화
+        em.flush();
+        em.clear();
+
+        //when
+        //Member(1) + Team(N)
+//        List<Member> members = memberRepository.findAll();
+//        List<Member> members = memberRepository.findMemberFetchJoin();
+        List<Member> members = memberRepository.findEntityGraphByUsername("member1");
+
+        for (Member member : members) {
+            System.out.println("member = " + member.getUsername());
+            System.out.println("member.teamClass = " + member.getTeam().getClass() );
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
     }
 }
