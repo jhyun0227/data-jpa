@@ -3,19 +3,18 @@ package study.datajpa.member.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.member.dto.MemberDto;
 import study.datajpa.member.entity.Member;
 
+import javax.persistence.LockModeType;
+import javax.persistence.QueryHint;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
 
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
 
@@ -81,4 +80,15 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @EntityGraph(attributePaths = {"team"})
 //    @EntityGraph("Member.all") //Member 클래스에 정의한 NamedEntityGraph.. 잘 사용하진 않는 것 같다.
     List<Member> findEntityGraphByUsername(@Param("username") String username);
+
+    /**
+     * Hint & Lock
+     * readOnly라는 힌트를 줌으로서 스냅샷을 만들지 않아 성능의 최적화를 한다.
+     * 자주 쓰일일은 없을 것..... 테스트를 통해 적용할지 말지 정해야 한다.
+     */
+    @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true") )
+    Member findReadOnlyByUsername(String username);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<Member> findLockByUsername(String username);
 }

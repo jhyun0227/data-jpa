@@ -1,6 +1,7 @@
 package study.datajpa.team.entity;
 
 import lombok.*;
+import study.datajpa.member.entity.JpaBaseEntity;
 import study.datajpa.member.entity.Member;
 
 import javax.persistence.*;
@@ -11,7 +12,7 @@ import java.util.List;
 @Getter @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(of = {"id", "name"})
-public class Team {
+public class Team extends JpaBaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_id")
