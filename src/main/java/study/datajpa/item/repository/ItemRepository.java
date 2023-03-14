@@ -1,0 +1,8 @@
+package study.datajpa.item.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import study.datajpa.item.entity.Item;
+
+public interface ItemRepository extends JpaRepository<Item, Long> {
+}
